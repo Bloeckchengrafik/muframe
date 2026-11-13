@@ -1,0 +1,15 @@
+         TITLE 'BARE METAL S360'
+
+DEMO     CSECT
+         BALR  12,0
+         USING *,12
+
+         LA    1,42
+         LA    2,17
+         AR    1,2
+         ST    1,RESULT
+
+HALT     B     HALT
+
+RESULT   DC    F'0'
+         END   DEMO
