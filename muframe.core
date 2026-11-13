@@ -1,0 +1,46 @@
+CAPI=2: {}
+
+name: :bloeckchengrafik:muframe:0.1
+description: Muframe - Mainframe on a Chip
+
+filesets:
+  rtl:
+    files:
+      - rtl/muf_top.sv
+    file_type: systemVerilogSource
+    depend:
+      - "~wb_intercon-1.2"
+
+  tb:
+    files:
+      - tb/muf_tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default
+    filesets:
+      - rtl
+    toplevel: muf_top
+
+  sim:
+    <<: *default
+    description: Simulate the design
+    default_tool: icarus
+    filesets_append:
+      - tb
+    toplevel: muf_tb
+    tools:
+      icarus:
+        iverilog_options:
+          - -g2012 # Use SystemVerilog-2012
+      modelsim:
+        vlog_options:
+          - -timescale=1ns/1ns
+
+
+generate:
+  intercon:
+    generator: wb_intercon
+    parameters:
+      masters: {}
+      slaves: {}
