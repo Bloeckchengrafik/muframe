@@ -1,15 +1,25 @@
-         TITLE 'BARE METAL S360'
+        TITLE 'BARE METAL S360'
 
-DEMO     CSECT
-         BALR  12,0
-         USING *,12
+BOOT    CSECT                       CPU Configuration
+        DC    X'00000000'           Initial PSW Meta
+        DC    A(DEMO)               Initial PSW Address
+        ORG   DEMO+X'60'
+        DC    X'00000000'           SVC Interrupt PSW Meta
+        DC    A(SVCHAND)            SVC Interrupt PSW Address
 
-         LA    1,42
-         LA    2,17
-         AR    1,2
-         ST    1,RESULT
+        ORG   BOOT+X'100'           Other PSWs
+DEMO    BALR  12,0                  Begin program; initialize
+        USING *,12                  stack space
 
-HALT     B     HALT
+        LA    1,42                  Load 42 into 1
+        LA    2,17                  Load 17 into 2
+        AR    1,2                   Add 2 to 1
+        ST    1,RESULT              Store result
+        B     HALT                  End execution
 
-RESULT   DC    F'0'
-         END   DEMO
+SVCHAND B     HALT                  SVC Interrupt handler - HALT for now
+
+HALT    B     HALT
+
+RESULT  DC    F'0'
+        END   DEMO
