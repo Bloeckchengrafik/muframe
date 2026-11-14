@@ -1,0 +1,9 @@
+version = "1.2.0"
+
+flist_files = [
+    "verible.filelist",
+]
+
+include_dirs = [
+    "build/bloeckchengrafik_muframe_0.1/*/src/bloeckchengrafik_muframe-wb_intercon_0.1"
+]

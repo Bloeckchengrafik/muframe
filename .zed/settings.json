@@ -1,0 +1,10 @@
+{
+  "languages": {
+    "SystemVerilog": {
+      "language_servers": ["!verible", "!slang", "slingshot"],
+    },
+  },
+  "file_types": {
+    "YAML": ["core"]
+  }
+}

@@ -10,3 +10,6 @@ wheels/
 .venv
 fusesoc.conf
 fusesoc_libraries/
+.fusesoc-lsp
+verible.filelist
+vcd/

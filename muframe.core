@@ -7,9 +7,11 @@ filesets:
   rtl:
     files:
       - rtl/muf_top.sv
+      - rtl/cpu/bus/memory_master.sv
     file_type: systemVerilogSource
     depend:
-      - "~wb_intercon-1.2"
+      - "award-winning:wishbone:wb_intercon:1.4.2"
+      - "award-winning:wishbone:wb_ram:1.1.0"
 
   tb:
     files:
@@ -21,6 +23,8 @@ targets:
     filesets:
       - rtl
     toplevel: muf_top
+    generate:
+      - wb_intercon
 
   sim:
     <<: *default
@@ -39,8 +43,16 @@ targets:
 
 
 generate:
-  intercon:
-    generator: wb_intercon
+  wb_intercon:
+    generator: wb_intercon_gen
     parameters:
-      masters: {}
-      slaves: {}
+      endian: big
+      hosts:
+        muf_instr:
+          devices: [mem]
+        muf_data:
+          devices: [mem]
+      devices:
+        mem:
+          offset: 0x0
+          size: 0x20
