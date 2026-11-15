@@ -7,7 +7,10 @@ filesets:
   rtl:
     files:
       - rtl/muf_top.sv
-      - rtl/cpu/bus/memory_master.sv
+      - rtl/cpu/bus/wb.sv
+      - rtl/cpu/bus/instr_fifo.sv
+      - rtl/cpu/bus/instr_mem_host.sv
+      - rtl/cpu/muframe.sv
     file_type: systemVerilogSource
     depend:
       - "award-winning:wishbone:wb_intercon:1.4.2"
@@ -16,6 +19,8 @@ filesets:
   tb:
     files:
       - tb/muf_tb.sv
+      - tb/instr_mem_host_tb.sv
+      - tb/instr_fifo_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -26,7 +31,7 @@ targets:
     generate:
       - wb_intercon
 
-  sim:
+  sim: &sim
     <<: *default
     description: Simulate the design
     default_tool: icarus
@@ -40,6 +45,17 @@ targets:
       modelsim:
         vlog_options:
           - -timescale=1ns/1ns
+
+  test_instr_mem_host:
+    <<: *sim
+    description: Test the instr_mem_host module
+    toplevel: instr_mem_host_tb
+
+
+  test_instr_fifo:
+    <<: *sim
+    description: Test the instr_fifo module
+    toplevel: instr_fifo_tb
 
 
 generate:
@@ -55,4 +71,4 @@ generate:
       devices:
         mem:
           offset: 0x0
-          size: 0x20
+          size: 0x00008000

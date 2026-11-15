@@ -8,6 +8,10 @@ setup:
 sim:
     uv run fusesoc run --target sim :bloeckchengrafik:muframe:0.1
 
+test:
+    uv run fusesoc run --target test_instr_mem_host :bloeckchengrafik:muframe:0.1
+    uv run fusesoc run --target test_instr_fifo :bloeckchengrafik:muframe:0.1
+
 sim-vcd-surfer:
     surfer build/*/sim-icarus/muf_tb.vcd
 
