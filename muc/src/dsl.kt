@@ -5,8 +5,12 @@ package muc
 @DslMarker
 annotation class MucDslMarker
 
-class GeneralPurposeRegister(val index: Int)
-class MicrocodeRegister(val index: Int)
+class GeneralPurposeRegister(val index: Int) {
+    val encoding: Int = index
+}
+class MicrocodeRegister(val index: Int) {
+    val encoding: Int = index + 16
+}
 
 @MucDslMarker
 class InstructionDsl {
