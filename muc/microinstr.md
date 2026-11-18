@@ -6,7 +6,7 @@ A microinstuction is always a flow from some source to some destination and does
 
 ### Op Target
 
-An operation target is a 6-bit value that specifies the CPU target area of a calculation. Either a GP register or a muc register.
+An operation target is a 7-bit value that specifies the CPU target area of a calculation. Either a GP register or a muc register.
 - GPR0-GPR15 are encoded from 0 through 15
 - Parameters from the instruction are encoded from 16 onwards. They are RO. Following sizes & mapping are used:
   - {16-19}-4Bit, 20-8Bit, {21,22}-24Bit
@@ -17,6 +17,8 @@ An operation target is a 6-bit value that specifies the CPU target area of a cal
   - SS1: 16-L1, 17-L2, 18-B1, 19-B2, 21-D1, 22-D2
   - SS2: 16-B1, 17-B2, 20-L, 21-D1, 22-D2
 - MUC registers are encoded from 32 onwards. MUC registers should be used by lowest number first. Initially, the CPU will have 4 MUC registers. muR0 through muR3.
+
+Bit 7 is the "indirection" flag. When set, it can resolve 4 bit values into registers. Specifically permitted are parameters & muRs. 
 
 muR0 is specifically reserved for the muPC. This always starts at 0 per instruction for simplicity. Jumps are thus also only register writes.
 
