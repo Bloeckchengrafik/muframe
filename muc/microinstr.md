@@ -2,7 +2,7 @@
 
 The muFrame microinstruction set encoding is not freezed and may change between revisions. All consumers are advised to be in-tree.
 
-There are four types of microinstructions: `LDI32` (00), `ALU` (01), `MEMDo` (10) and `MEMWait` (11). General format: `[47:46]OP [45:7]INSTR [6:4]FLAGS [3:0]COND`
+There are four types of microinstructions: `LDI32` (00), `ALU` (01), `MEMRead` (10) and `MEMWait` (11). General format: `[47:46]OP [45:7]INSTR [6:4]FLAGS [3:0]COND`
 
 Every microprogram is prefixed by a 32-bit integer indicating the program length in microinstructions. To return to the dispatcher, jump to any address >= program length. Pending memory operations are illegal!
 
@@ -155,7 +155,7 @@ GPRs thus have the same encoding in IBM System/360 instructions.
 
 ## Flags
 
-3 Bits controlling ALU logic.
+Three Bits controlling ALU logic.
 
 1. (S)tore Flags (LSB)
    Store flags into the NZCV register
