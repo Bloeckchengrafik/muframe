@@ -60,7 +60,7 @@ Rules for the carry flag:
 
 Shifts & Rotates:
 
-- C is the last bit shifted in or out, or preserved when B is 0
+- C is the last bit shifted out, or preserved when B is 0
 - (Shift) If B > WIDTH, zeroes all bits (or ones for SAR with negative A). C contains 0/1 depending on the sign of A.
 - (Shift) If B == WIDTH, zeroes/ones the result as above. C contains the last shifted bit.
 - (Rotate) With B > WIDTH, shift by B % WIDTH
@@ -90,7 +90,7 @@ WIDTH: Memory access width:
 
 There can only ever be one active memory operation at a time. When SYNC is `0`, any new MEMDo is illegal! Inputs are latched during operation. Asynchronous operations only store the result in DST when MEMWait is called.
 
-S-Bit is only allowed in a synchronous read operation; here, it acts like a `PASS_A` operation with A = result.
+S-Bit is only allowed in a synchronous read operation; here, it acts like a `PASS_A` operation with A = result. ALU width is set according to the `WIDTH` field.
 
 For simplicity's sake, I've decided not to draw out a state diagram for memory operations.
 
