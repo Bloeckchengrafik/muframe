@@ -2,7 +2,7 @@
 
 The muFrame microinstruction set encoding is not freezed and may change between revisions. All consumers are advised to be in-tree.
 
-There are four types of microinstructions: `LDI32` (00), `ALU` (01), `MEMDo` (10) and `MEMWait` (11). Opcodes are the at the LSB: `OP INSTR FLAGS COND`
+There are four types of microinstructions: `LDI32` (00), `ALU` (01), `MEMDo` (10) and `MEMWait` (11). General format: `[47:46]OP [45:7]INSTR [6:4]FLAGS [3:0]COND`
 
 Every microprogram is prefixed by a 32-bit integer indicating the program length in microinstructions. To return to the dispatcher, jump to any address >= program length. Pending memory operations are illegal!
 
@@ -10,13 +10,13 @@ Every microprogram is prefixed by a 32-bit integer indicating the program length
 
 LDI32 loads a 32-Bit immediate value into a target.
 
-`00 DST IMM32 FLAGS COND`
+`[47:46]00 [45:39]DST [38:7]IMM32 [6:4]FLAGS [3:0]COND`
 
 S flag acts like a `PASS_A` operation with A = IMM32.
 
 ## ALU
 
-ALU operations are encoded as `01 [1res] SRC_A SRC_B OP DST WIDTH [nres] FLAGS COND`.
+ALU operations are encoded as `[47:46]01 [45:39]DST [38:32]SRC_A [31:25]SRC_B [24:20]OP [19:18]WIDTH [nres] [6:4]FLAGS [3:0]COND`.
 
 WIDTH is the number of bits used for the operation. The target register write will be zero-extended. Flag calculations are based on WIDTH.
 
@@ -69,13 +69,11 @@ Width:
 
 SEXT8, SEXT16, ZEXT8, ZEXT16, SWAP16 and BSWAP always operate on 32-bit values. Any other combination is illegal. Instruction-field operands are zero-extended to 32bit.
 
-The first reserved slot may be used for floating-point operations later.
-
 ## MEMDo
 
 MEMDo performs a memory operation, either reading or writing.
 
-`10 RW SRC_ADDR SRC/DST_VAL SYNC WIDTH [nres] FLAGS COND`
+`[47:46]10 [45:39]SRC/DST_VAL [38:32]SRC_ADDR [31:31]RW [30:30]SYNC [29:28]WIDTH [nres] [6:4]FLAGS [3:0]COND`
 
 RW: Read/Write. `0` = Read, `1` = Write
 
@@ -100,7 +98,7 @@ For simplicity's sake, I've decided not to draw out a state diagram for memory o
 
 MEMWait waits for a memory operation to complete. Generally, S-Bit is illegal (special case see below). A MEMWait without a MEMDo is a no-op.
 
-`11 [nres] FLAGS COND`
+`[47:46]11 [nres] [6:4]FLAGS [3:0]COND`
 
 Also writes the result of the operation to DST of MEMDo for asynchronous read operations. Here, S-Bit acts like a `PASS_A` operation with A = result.
 
@@ -152,6 +150,8 @@ Bit 6 is the "indirection" flag. When set, it can resolve 4 bit values into regi
 muR0 is specifically reserved for the muPC. This always starts at 0 per instruction for simplicity. Jumps are thus also only register writes. It advances by 1 per microinstruction if no actual writes are performed, so a skipped write will advance.
 
 GPRs thus have the same encoding in IBM System/360 instructions.
+
+`[6:6]INDIRECT [5:0]RESOURCE_ID`
 
 ## Flags
 
