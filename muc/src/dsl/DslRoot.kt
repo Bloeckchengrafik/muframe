@@ -108,19 +108,11 @@ class InstructionDsl : Values by ValuesImpl() {
     }
 
     infix fun <T : Operation> MuInstruction<T>.on(condition: Condition): MuInstruction<T> {
-        return MuInstruction(
-            operation,
-            flags,
-            condition
-        )
+        return this.also { it.condition = condition }
     }
 
     infix fun <T : Operation> MuInstruction<T>.with(flags: Flags): MuInstruction<T> {
-        return MuInstruction(
-            operation,
-            flags,
-            condition
-        )
+        return this.also { it.flags = flags }
     }
 }
 
