@@ -7,9 +7,9 @@ filesets:
   rtl:
     files:
       - rtl/muf_top.sv
-      - rtl/cpu/bus/wb.sv
-      - rtl/cpu/bus/instr_fifo.sv
-      - rtl/cpu/bus/instr_mem_host.sv
+      - rtl/wb.sv
+      - rtl/cpu/instr_fifo.sv
+      - rtl/cpu/instr_mem_host.sv
       - rtl/cpu/muframe.sv
     file_type: systemVerilogSource
     depend:
