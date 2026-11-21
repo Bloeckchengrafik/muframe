@@ -24,7 +24,7 @@ class InstructionDsl : Values by ValuesImpl() {
     val updateFlags = Flags(true)
     val Memory = MemInst
 
-    private val instructions = mutableListOf<MuInstruction<*>>()
+    internal val instructions = mutableListOf<MuInstruction<*>>()
 
     infix fun Destination.load(imm: Int): MuInstruction<Operation.LDI32> {
         return MuInstruction(
@@ -158,10 +158,39 @@ data class SSTwoInstructionParams(
     val D2: Immediate12BitParameter
 )
 
+enum class InstructionType(val ident: Int) {
+    Invalid(0), RR(1), RX(2), SI(3), RS(4), SS(5),
+}
+
+fun ByteArray.put48(offset: Int, value: Long) {
+    require(value in 0..0xFFFF_FFFF_FFFFL) { "Value must fit in 48 bits" }
+    require(offset >= 0 && offset <= size - 6) { "Not enough space" }
+
+    for (i in 0 until 6) {
+        this[offset + i] = (value ushr (40 - 8 * i)).toByte()
+    }
+}
+
+private fun buildJumpTableEntry(type: InstructionType, offset: UInt): UInt {
+    return type.ident.toUInt() shl 29 or offset
+}
+
 @MucDslMarker
 class MucDsl {
-    fun rrType(name: String, opcode: Int, block: InstructionDsl.(RRInstructionParams) -> Unit) {
+    private val metaTable = Array(256) { 0.toUInt() }
+    private val data = ByteArray(0x10000)
+    private var nextAddr = 0
+    private var nextIdx = 0
 
+    fun rrType(name: String, opcode: Byte, block: InstructionDsl.(RRInstructionParams) -> Unit) {
+        val params = RRInstructionParams(RegParameter(16), RegParameter(17))
+        val jumpTableEntry = buildJumpTableEntry(InstructionType.RR, nextIdx.toUInt())
+        metaTable[opcode.toInt()] = jumpTableEntry
+
+        val instructions = InstructionDsl()
+            .apply { block(params) }
+            .instructions
+            .map { it.encode() }
     }
 
     fun rxType(name: String, opcode: Int, block: InstructionDsl.(RXInstructionParams) -> Unit) {
