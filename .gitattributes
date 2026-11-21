@@ -1,0 +1,7 @@
+# Binary artifacts
+*.bin binary
+*.bit binary
+*.fs binary
+
+# Other
+* text eol=lf

@@ -2,6 +2,9 @@
 
 package muc.dsl
 
+import java.io.File
+import java.io.DataOutputStream
+
 @DslMarker
 annotation class MucDslMarker
 
@@ -185,6 +188,14 @@ class MucDsl {
     private val data = ByteArray(0x10000)
     private var nextAddr = 0
     private var nextIdx = 0
+
+    fun writeImages(directory: File) {
+        require(directory.isDirectory || directory.mkdirs()) { "Cannot create output directory: $directory" }
+        DataOutputStream(directory.resolve("jumptable.bin").outputStream()).use { output ->
+            metaTable.forEach { output.writeInt(it.toInt()) }
+        }
+        directory.resolve("microcodeimg.bin").writeBytes(data.copyOf(nextAddr))
+    }
 
     private fun instr(name: String, type: InstructionType, opcode: Byte, block: InstructionDsl.() -> Unit) {
         val jumpTableEntry = buildJumpTableEntry(type, nextIdx.toUInt())
