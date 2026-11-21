@@ -6,7 +6,7 @@ be in-tree.
 There are four types of microinstructions: `LDI32` (00), `ALU` (01), `MEMRead` (10) and `MEMWait` (11). General format:
 `[47:46]OP [45:7]INSTR [6:4]FLAGS [3:0]COND`
 
-Every microprogram is prefixed by a 32-bit integer indicating the program length in microinstructions. To return to the
+Every microprogram is prefixed by a 32-bit (in an 48 bit field) integer indicating the program length in microinstructions. To return to the
 dispatcher, jump to any address >= program length. Pending memory operations are illegal!
 
 ## Jump Table Encoding
@@ -161,12 +161,12 @@ register.
 - GPR0-GPR15 are encoded from 0 through 15
 - Parameters from the instruction are encoded from 16 onwards. They are RO. Following sizes & mapping are used:
     - {16-19}-4Bit, 20-8Bit, {21,22}-12Bit
-    - RR: 16-R1 17-R2
-    - RX: 16-R1, 17-B2, 18-X2, 21-D2
-    - SI: 16-B1, 20-I2, 21-D1
-    - RS: 16-R1, 17-R3, 18-B2, 21-D2
-    - SS1: 16-B1, 17-B2, 20-L, 21-D1, 22-D2
-    - SS2: 16-L1, 17-L2, 18-B1, 19-B2, 21-D1, 22-D2
+    - RR:  16-R1 17-R2
+    - RX:  16-R1 17-X2 18-B2 21-D2
+    - SI:  20-------I2 18-B1 21-D1
+    - RS:  16-R1 17-R3 18-B2 21-D2
+    - SS1: 20-------L  18-B1 21-D1 19-B2 22-D2
+    - SS2: 16-L1 17-L2 18-B1 21-D1 19-B2 22-D2
 - 29 = program length in microinstructions (RO)
 - 30 = 0
 - 31 = 1
