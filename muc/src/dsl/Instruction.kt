@@ -1,5 +1,16 @@
 package muc.dsl
 
+internal fun encodeField(value: Long, width: Int, offset: Int): ULong {
+    require(width in 1..48) { "Field width must be between 1 and 48, got $width" }
+    require(offset in 0..(48 - width)) {
+        "Field of width $width at offset $offset extends outside the 48-bit instruction"
+    }
+    require(value >= 0 && value < (1L shl width)) {
+        "Field value $value does not fit in $width unsigned bits"
+    }
+    return value.toULong() shl offset
+}
+
 enum class Opcode(val opcode: Int) {
     LDI32(0b00),
     ALU(0b01),
@@ -7,7 +18,18 @@ enum class Opcode(val opcode: Int) {
     MEMWait(0b11),
 }
 
+interface Awaitable
+
 sealed interface Operation {
+    fun encode(): ULong {
+        return encodeField(opcode.opcode.toLong(), 2, 46) or encodeContents()
+    }
+
+    /**
+     * Produce correctly aligned contents for this operation.
+     */
+    fun encodeContents(): ULong
+
     val opcode: Opcode
 
     data class LDI32(
@@ -15,6 +37,11 @@ sealed interface Operation {
         val imm32: Int
     ) : Operation {
         override val opcode: Opcode = Opcode.LDI32
+
+        override fun encodeContents(): ULong {
+            return encodeField(dst.identifier.toLong(), 7, 39) or
+                encodeField(imm32.toUInt().toLong(), 32, 7)
+        }
     }
 
     data class ALU(
@@ -25,6 +52,14 @@ sealed interface Operation {
         val width: AluWidth
     ) : Operation {
         override val opcode: Opcode = Opcode.ALU
+
+        override fun encodeContents(): ULong {
+            return encodeField(dst.identifier.toLong(), 7, 39) or
+                encodeField(srcA.identifier.toLong(), 7, 32) or
+                encodeField(srcB.identifier.toLong(), 7, 25) or
+                encodeField(operation.encoding.toLong(), 5, 20) or
+                encodeField(width.encoding.toLong(), 2, 18)
+        }
     }
 
     data class MEMRead(
@@ -32,8 +67,15 @@ sealed interface Operation {
         val address: Source,
         val synchronous: Boolean,
         val width: MemWidth,
-    ) : Operation {
+    ) : Operation, Awaitable {
         override val opcode: Opcode = Opcode.MEMDo
+
+        override fun encodeContents(): ULong {
+            return encodeField(value.identifier.toLong(), 7, 39) or
+                encodeField(address.identifier.toLong(), 7, 32) or
+                encodeField(if (synchronous) 1 else 0, 1, 30) or
+                encodeField(width.encoding.toLong(), 2, 28)
+        }
     }
 
     data class MEMWrite(
@@ -41,12 +83,24 @@ sealed interface Operation {
         val address: Source,
         val synchronous: Boolean,
         val width: MemWidth,
-    ) : Operation {
+    ) : Operation, Awaitable {
         override val opcode: Opcode = Opcode.MEMDo
+
+        override fun encodeContents(): ULong {
+            return encodeField(value.identifier.toLong(), 7, 39) or
+                encodeField(address.identifier.toLong(), 7, 32) or
+                encodeField(1, 1, 31) or
+                encodeField(if (synchronous) 1 else 0, 1, 30) or
+                encodeField(width.encoding.toLong(), 2, 28)
+        }
     }
 
     data object MEMWait : Operation {
         override val opcode: Opcode = Opcode.MEMWait
+
+        override fun encodeContents(): ULong {
+            return 0.toULong()
+        }
     }
 }
 
@@ -92,6 +146,14 @@ data class Flags(
     operator fun plus(other: Flags): Flags {
         return Flags(s || other.s)
     }
+
+    /**
+     * Produce correctly aligned encoding for this operation.
+     */
+    fun encode(): ULong {
+        val raw = if (s) 0b100L else 0L
+        return encodeField(raw, 3, 4)
+    }
 }
 
 enum class Condition(val value: Int) {
@@ -117,5 +179,8 @@ data class MuInstruction<T : Operation>(
     var operation: T,
     var flags: Flags = Flags(false),
     var condition: Condition = Condition.Always,
-)
-
+) {
+    fun encode(): ULong {
+        return operation.encode() or flags.encode() or encodeField(condition.value.toLong(), 4, 0)
+    }
+}
